@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "OutSystems Event Tracer",
+  "version": "0.6.0",
+  "description": "Follow OutSystems Reactive (O11/ODC) event flows between blocks: triggers, inputs, actions, screen variables, block picker and step-by-step debug mode.",
+  "devtools_page": "devtools.html",
+  "permissions": ["debugger"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/inject.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "minimum_chrome_version": "111"
+}

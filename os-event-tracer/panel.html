@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OS Events</title>
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+  <header class="toolbar">
+    <button id="btnPick" class="iconbtn" title="Select a block in the page to inspect its variables (Esc to cancel)">
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M2 2h7v1.5H3.5V9H2z" fill="currentColor"/><path d="M6.5 6.5l8 3-3.4 1.1L9.9 14z" fill="currentColor"/></svg>
+    </button>
+    <span class="sep"></span>
+    <div class="tabs">
+      <button class="tab active" data-tab="flow">Flow</button>
+      <button class="tab" data-tab="live">Live variables</button>
+    </div>
+    <span class="sep flow-only"></span>
+    <div class="seg flow-only" id="modeSeg" title="How flows are displayed">
+      <button class="segb active" data-mode="chain">Chain</button>
+      <button class="segb" data-mode="tree">Tree</button>
+    </div>
+    <span class="sep"></span>
+    <button id="btnRecord" class="tool rec on" title="Record / pause recording">● Record</button>
+    <button id="btnClear" class="tool" title="Clear everything recorded so far">⊘ Clear</button>
+    <button id="btnExport" class="tool" title="Export the records as JSON">⇩ Export</button>
+    <button id="btnDebug" class="tool dbgtoggle" title="Debug mode: pause the app and go step by step">🐞 Debug</button>
+    <span class="sep flow-only"></span>
+    <span class="searchbox flow-only">
+      <input id="filter" type="search" placeholder="Search actions, blocks, events, variables…" spellcheck="false" title="Matches action, block and event names, server calls and variable names. Enter jumps to the next match.">
+      <span id="filterCount" class="count"></span>
+    </span>
+    <label class="chk flow-only" title="Also match variable values (slower)"><input type="checkbox" id="filterValues"> values</label>
+    <label class="chk flow-only"><input type="checkbox" id="hideLifecycle"> Hide lifecycle</label>
+    <label class="chk flow-only"><input type="checkbox" id="hideFetch"> Hide data fetch</label>
+    <label class="chk flow-only" title="Only show flows that contain at least one Trigger Event"><input type="checkbox" id="onlyEvents" checked> Only block events</label>
+    <label class="chk" title="Capture variables before/after each action"><input type="checkbox" id="snapshots" checked> Snapshots</label>
+    <label class="chk" title="Keep the records when the page reloads"><input type="checkbox" id="preserve"> Preserve log</label>
+  </header>
+
+  <div id="dbgBar" class="dbgbar hidden">
+    <span id="dbgState" class="dbgstate">○ off</span>
+    <label class="chk">Pause on
+      <select id="dbgMode">
+        <option value="step">every step (node)</option>
+        <option value="actions">every action entry</option>
+        <option value="events">every Trigger Event</option>
+        <option value="breaks">breakpoints only</option>
+      </select>
+    </label>
+    <label class="chk" title="Do not pause in On Render / On Ready / On Initialize / On Parameters Changed / On Destroy"><input type="checkbox" id="dbgIgnLife" checked> skip lifecycle</label>
+    <label class="chk" title="Do not pause inside actions of OutSystems* modules (OutSystemsUI…)"><input type="checkbox" id="dbgIgnLibs" checked> skip OutSystemsUI</label>
+    <span class="sep"></span>
+    <button id="dbgStep" class="tool dbgbtn" disabled title="Go to the next step (F10)">⤵ Next step</button>
+    <button id="dbgPass" class="tool dbgbtn" disabled title="Let this thread run to the end without pausing (F9)">⏭ Run thread</button>
+    <button id="dbgCont" class="tool dbgbtn" disabled title="Continue to the next pause point (F8)">▶ Continue</button>
+    <button id="dbgStop" class="tool" title="Leave debug mode and let the app run">■ Exit</button>
+    <span id="dbgBreaks" class="dbgbreaks"></span>
+  </div>
+
+  <main id="viewFlow" class="split">
+    <div id="leftCol" class="leftcol">
+      <div id="focusBar" class="focusbar hidden"></div>
+      <section id="tree" class="tree hidden" tabindex="0"></section>
+      <section id="chain" class="chain" tabindex="0"></section>
+    </div>
+    <div class="resizer" id="resizer"></div>
+    <section id="details" class="details">
+      <div class="empty">Select a step on the left to see its inputs, variables and changes.<br><br>
+        <b>Tips:</b> hover a step to highlight everything it caused · double-click (or press <kbd>F</kbd>) to focus on that chain ·
+        <kbd>↑</kbd>/<kbd>↓</kbd> move between steps · <kbd>←</kbd> goes to the cause · <kbd>Esc</kbd> leaves focus.</div>
+    </section>
+  </main>
+
+  <main id="viewLive" class="live hidden">
+    <div class="live-bar">
+      <button id="btnLiveRefresh" class="tool" title="Read the current values from the page">↻ Refresh</button>
+      <label class="chk"><input type="checkbox" id="liveAuto"> Auto-refresh (2 s)</label>
+      <span class="searchbox">
+        <input id="liveFilter" type="search" placeholder="Search blocks and variables…" spellcheck="false" title="Matches block names, variable names at any depth and (optionally) values. Enter jumps to the next match.">
+        <span id="liveCount" class="count"></span>
+      </span>
+      <button id="livePrev" class="tool small" title="Previous match (Shift+Enter)">▲</button>
+      <button id="liveNext" class="tool small" title="Next match (Enter)">▼</button>
+      <label class="chk" title="Also match variable values"><input type="checkbox" id="liveValues" checked> values</label>
+      <label class="chk" title="When you select an element in the Elements panel, show its block here"><input type="checkbox" id="liveSync" checked> Sync with Elements panel</label>
+    </div>
+    <div id="liveCrumbs" class="crumbs hidden"></div>
+    <div id="liveTree" class="live-tree" tabindex="0"></div>
+  </main>
+
+  <footer class="status" id="status">Connecting to the page…</footer>
+
+  <script src="store.js"></script>
+  <script src="panel.js"></script>
+</body>
+</html>
